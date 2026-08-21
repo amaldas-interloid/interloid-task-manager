@@ -1,0 +1,66 @@
+[project]
+name = "fastapi-backend-starter"
+version = "0.1.0"
+description = "Production-ready FastAPI starter template"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Amal Das", email = "amaldas@interloid.com" }
+]
+
+dependencies = [
+    "fastapi>=0.141.1",
+    "uvicorn>=0.35.0",
+    "pydantic-settings>=2.14.2",
+    "python-dotenv>=1.2.2",
+    "sqlalchemy>=2.0.51",
+    "asyncpg>=0.31.0",
+    "alembic>=1.19.0",
+    "pwdlib[argon2]>=0.3.0",
+    "pyjwt>=2.13.0",
+    "uuid6>=2024.7.10",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "ruff>=0.16.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+exclude = [
+    "migrations/versions",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+] 
+
+ignore = [
+    "UP046",
+]  
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = false
+init_typed = false
+warn_required_dynamic_aliases = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
