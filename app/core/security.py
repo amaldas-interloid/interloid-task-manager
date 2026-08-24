@@ -1,11 +1,14 @@
+import hashlib
+import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
 from pwdlib import PasswordHash
+from uuid6 import uuid7
 
 from app.core.config import settings
-from app.enums.token import TokenType
+from app.enums.role import RoleName
 
 password_hash = PasswordHash.recommended()
 
@@ -24,15 +27,21 @@ def verify_password(
     )
 
 
-def create_access_token(subject: str) -> str:
-    expires_at = datetime.now(UTC) + timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+def create_access_token(
+    subject: str,
+    role: RoleName,
+) -> str:
+    now = datetime.now(UTC)
+    expires_at = now + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
     )
 
     payload: dict[str, Any] = {
         "sub": subject,
-        "type": TokenType.ACCESS,
+        "role": role.value,
         "exp": expires_at,
+        "iat": now,
+        "jti": str(uuid7()),
     }
 
     return jwt.encode(
@@ -42,20 +51,14 @@ def create_access_token(subject: str) -> str:
     )
 
 
-def create_refresh_token(subject: str) -> str:
-    expires_at = datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+def create_refresh_token() -> str:
+    return secrets.token_urlsafe(64)
 
-    payload: dict[str, Any] = {
-        "sub": subject,
-        "type": TokenType.REFRESH,
-        "exp": expires_at,
-    }
 
-    return jwt.encode(
-        payload,
-        settings.JWT_SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(
+        token.encode("utf-8"),
+    ).hexdigest()
 
 
 def decode_token(token: str) -> dict[str, Any]:

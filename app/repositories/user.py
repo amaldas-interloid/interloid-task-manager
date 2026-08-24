@@ -1,8 +1,5 @@
-from uuid import UUID
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.models.user import User
 from app.repositories.base import BaseRepository
@@ -16,7 +13,9 @@ class UserRepository(BaseRepository[User]):
         self,
         email: str,
     ) -> User | None:
-        result = await self.session.execute(select(User).where(User.email == email))
+        result = await self.session.execute(
+            select(User).where(User.email == email),
+        )
 
         return result.scalar_one_or_none()
 
@@ -26,12 +25,25 @@ class UserRepository(BaseRepository[User]):
     ) -> bool:
         return await self.get_by_email(email) is not None
 
-    async def get_with_role(
+    async def create(
         self,
-        user_id: UUID,
-    ) -> User | None:
-        result = await self.session.execute(
-            select(User).options(selectinload(User.role)).where(User.id == user_id)
-        )
+        user: User,
+    ) -> User:
+        self.session.add(user)
+        await self.session.flush()
+        await self.session.refresh(user)
 
-        return result.scalar_one_or_none()
+        return user
+
+    async def update_password(
+            self,
+            user: User,
+            password_hash: str,
+    ) -> User:
+        user.password_hash = password_hash
+
+        await self.session.flush()
+        await self.session.refresh(user)
+
+        return user
+    
