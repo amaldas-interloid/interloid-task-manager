@@ -1,6 +1,7 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.enums.role import RoleName
 from app.models.user import User
 from app.repositories.base import BaseRepository
 
@@ -46,4 +47,44 @@ class UserRepository(BaseRepository[User]):
         await self.session.refresh(user)
 
         return user
+
+    async def list_users(
+            self,
+            limit: int,
+            offset: int,  
+    ) -> tuple[list[User], int]:
+        total_result = await self.session.execute(
+            select(func.count()).select_from(User),
+        )
+        total = total_result.scalar_one()
+
+        result  = await self.session.execute(
+            select(User)
+            .order_by(User.created_at.desc())
+            .limit(limit)
+            .offset(offset),
+        )
+
+        users = list(result.scalars().all())
+
+        return users,total
+
+    async def update_user(
+            self,
+            user:User,
+            role: RoleName | None = None,
+            is_active: bool | None = None,
+    ) -> User:
+        if role is not None:
+            user.role  = role
+
+        if is_active is not None:
+            user.is_active = is_active
+
+        await self.session.flush()
+        await self.session.refresh(user)
+
+        return user
+        
+
     

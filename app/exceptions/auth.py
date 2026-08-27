@@ -49,4 +49,17 @@ class InvalidCurrentPasswordException(AppException):
             details=None,
         )
 
+class ForbiddenException(AppException):
+    def __init__(
+            self,
+            message: str = "you do not have the permission to perform this action",
+            code: str = "FORBIDDEN",
+    ) -> None:
+        super().__init__(
+            message=message,
+            code=code,
+            status_code=403,
+            details=None,
+        )
+
 

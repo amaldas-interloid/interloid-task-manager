@@ -8,7 +8,6 @@ from pwdlib import PasswordHash
 from uuid6 import uuid7
 
 from app.core.config import settings
-from app.enums.role import RoleName
 
 password_hash = PasswordHash.recommended()
 
@@ -29,7 +28,6 @@ def verify_password(
 
 def create_access_token(
     subject: str,
-    role: RoleName,
 ) -> str:
     now = datetime.now(UTC)
     expires_at = now + timedelta(
@@ -37,8 +35,7 @@ def create_access_token(
     )
 
     payload: dict[str, Any] = {
-        "sub": subject,
-        "role": role.value,
+        "sub": subject,  
         "exp": expires_at,
         "iat": now,
         "jti": str(uuid7()),

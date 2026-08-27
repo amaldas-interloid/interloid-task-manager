@@ -38,7 +38,11 @@ class User(BaseModelMixin, Base):
     )
 
     role: Mapped[RoleName] = mapped_column(
-        Enum(RoleName, name="role_name"),
+        Enum(
+            RoleName,
+            name="role_name",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
         nullable=False,
         default=RoleName.USER,
     )

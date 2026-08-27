@@ -84,7 +84,6 @@ class AuthService:
 
         access_token = create_access_token(
             subject=str(user.id),
-            role=user.role,
         )
 
         refresh_token = create_refresh_token()
@@ -157,7 +156,6 @@ class AuthService:
 
         access_token = create_access_token(
             subject=str(user.id),
-            role=user.role,
         )
 
         return LoginResponse(

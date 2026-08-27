@@ -1,15 +1,14 @@
 from uuid import UUID
 
 from fastapi import Depends
-
-# from fastapi.security import OAuth2PasswordBearer
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_token
 from app.db.dependencies import get_db
-from app.exceptions.auth import UnauthorizedException
+from app.enums.role import RoleName
+from app.exceptions.auth import ForbiddenException, UnauthorizedException
 from app.models.user import User
 from app.repositories.user import UserRepository
 
@@ -30,7 +29,7 @@ async def get_current_user(
 
     subject = payload.get("sub")
 
-    if not subject:
+    if not isinstance(subject, str):
         raise UnauthorizedException(
             message="Invalid access token",
             code="INVALID_ACCESS_TOKEN",
@@ -61,3 +60,12 @@ async def get_current_user(
         )
 
     return user
+
+async def require_admin(
+        current_user: User =Depends(get_current_user),
+) -> User:
+
+    if  current_user.role != RoleName.ADMIN:
+        raise ForbiddenException()
+
+    return current_user
