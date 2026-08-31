@@ -72,6 +72,7 @@ async def test_old_password_fails_after_password_change(
 
     assert old_password_login.status_code == 401
 
+
 async def test_new_password_works_after_password_change(
     client: AsyncClient,
     test_user,
@@ -109,6 +110,7 @@ async def test_new_password_works_after_password_change(
 
     assert new_password_login.status_code == 200
 
+
 async def test_change_password_wrong_current_password_returns_401(
     client: AsyncClient,
     test_user,
@@ -135,6 +137,7 @@ async def test_change_password_wrong_current_password_returns_401(
     )
 
     assert response.status_code == 401
+
 
 async def test_change_password_revokes_all_refresh_tokens(
     client: AsyncClient,
@@ -186,7 +189,8 @@ async def test_change_password_revokes_all_refresh_tokens(
     assert response.status_code == 200
 
     result = await db_session.execute(
-        select(RefreshToken).where(
+        select(RefreshToken)
+        .where(
             RefreshToken.user_id == test_user.id,
         )
         .execution_options(
@@ -200,4 +204,3 @@ async def test_change_password_revokes_all_refresh_tokens(
 
     for token in tokens_after:
         assert token.revoked_at is not None
-

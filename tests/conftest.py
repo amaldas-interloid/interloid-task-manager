@@ -19,9 +19,7 @@ from app.main import app
 from app.models.user import User
 
 if os.getenv("ENV_FILE") != ".env.test":
-    raise RuntimeError(
-        "Tests must be run with ENV_FILE=.env.test"
-    )
+    raise RuntimeError("Tests must be run with ENV_FILE=.env.test")
 
 
 test_engine = create_async_engine(
@@ -97,7 +95,7 @@ async def test_user(
 ) -> User:
     user = User(
         id=uuid7(),
-        email= "testuser@example.com",
+        email="testuser@example.com",
         password_hash=hash_password("StrongPassword123!"),
         first_name="Test",
         last_name="User",
@@ -110,6 +108,7 @@ async def test_user(
     await db_session.refresh(user)
 
     return user
+
 
 @pytest.fixture
 async def inactive_user(
@@ -131,6 +130,7 @@ async def inactive_user(
 
     return user
 
+
 @pytest.fixture
 async def admin_user(
     db_session: AsyncSession,
@@ -150,6 +150,7 @@ async def admin_user(
     await db_session.refresh(user)
 
     return user
+
 
 @pytest.fixture
 async def second_admin(

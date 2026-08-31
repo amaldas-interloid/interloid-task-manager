@@ -95,9 +95,7 @@ async def test_me_rejects_deactivated_user(
     access_token = login_response.json()["data"]["access_token"]
 
     await db_session.execute(
-        update(User)
-        .where(User.id == test_user.id)
-        .values(is_active=False)
+        update(User).where(User.id == test_user.id).values(is_active=False)
     )
     await db_session.commit()
 

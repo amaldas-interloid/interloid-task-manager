@@ -39,7 +39,6 @@ class AuthService:
         self,
         request: RegisterRequest,
     ) -> UserResponse:
-
         if await self.user_repository.email_exists(request.email):
             raise EmailAlreadyExistsException()
 

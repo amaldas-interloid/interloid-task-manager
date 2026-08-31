@@ -16,7 +16,7 @@ engine = create_async_engine(
     echo=settings.DEBUG,
     connect_args={
         "ssl": ssl_context,
-    },  
+    },
 )
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

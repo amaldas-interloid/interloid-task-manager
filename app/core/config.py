@@ -8,6 +8,7 @@ from sqlalchemy import URL
 
 ENV_FILE = os.getenv("ENV_FILE", ".env")
 
+
 class Settings(BaseSettings):
     # Application
     APP_NAME: str
@@ -68,7 +69,6 @@ class Settings(BaseSettings):
         return url.render_as_string(
             hide_password=False,
         )
-        
 
 
 settings = Settings()

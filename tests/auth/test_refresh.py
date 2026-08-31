@@ -9,9 +9,9 @@ from app.models.refresh_token import RefreshToken
 
 
 async def test_refresh_rotates_refresh_token(
-        client: AsyncClient,
-        db_session: AsyncSession,
-        test_user,
+    client: AsyncClient,
+    db_session: AsyncSession,
+    test_user,
 ) -> None:
     login_response = await client.post(
         "/api/v1/auth/login",
@@ -40,7 +40,6 @@ async def test_refresh_rotates_refresh_token(
 
     new_access_token = refresh_body["data"]["access_token"]
     new_refresh_token = refresh_body["data"]["refresh_token"]
-
 
     assert new_access_token is not None
     assert new_refresh_token is not None
@@ -94,15 +93,9 @@ async def test_refresh_revokes_old_token_and_stores_new_token(
 
     tokens = result.scalars().all()
 
-    old_db_token = next(
-        token for token in tokens
-        if token.token_hash == old_hash
-    )
+    old_db_token = next(token for token in tokens if token.token_hash == old_hash)
 
-    new_db_token = next(
-        token for token in tokens
-        if token.token_hash == new_hash
-    )
+    new_db_token = next(token for token in tokens if token.token_hash == new_hash)
 
     assert old_db_token.revoked_at is not None
     assert new_db_token.revoked_at is None
@@ -139,6 +132,7 @@ async def test_reusing_rotated_refresh_token_returns_401(
     )
 
     assert replay_response.status_code == 401
+
 
 async def test_refresh_with_invalid_token_returns_401(
     client: AsyncClient,
