@@ -26,20 +26,10 @@ class UserRepository(BaseRepository[User]):
     ) -> bool:
         return await self.get_by_email(email) is not None
 
-    async def create(
+    async def update_password(
         self,
         user: User,
-    ) -> User:
-        self.session.add(user)
-        await self.session.flush()
-        await self.session.refresh(user)
-
-        return user
-
-    async def update_password(
-            self,
-            user: User,
-            password_hash: str,
+        password_hash: str,
     ) -> User:
         user.password_hash = password_hash
 
@@ -49,34 +39,37 @@ class UserRepository(BaseRepository[User]):
         return user
 
     async def list_users(
-            self,
-            limit: int,
-            offset: int,  
+        self,
+        limit: int,
+        offset: int,
     ) -> tuple[list[User], int]:
         total_result = await self.session.execute(
             select(func.count()).select_from(User),
         )
         total = total_result.scalar_one()
 
-        result  = await self.session.execute(
+        result = await self.session.execute(
             select(User)
-            .order_by(User.created_at.desc())
+            .order_by(
+                User.created_at.desc(),
+                User.id.desc(),
+            )
             .limit(limit)
             .offset(offset),
         )
 
         users = list(result.scalars().all())
 
-        return users,total
+        return users, total
 
     async def update_user(
-            self,
-            user:User,
-            role: RoleName | None = None,
-            is_active: bool | None = None,
+        self,
+        user: User,
+        role: RoleName | None = None,
+        is_active: bool | None = None,
     ) -> User:
         if role is not None:
-            user.role  = role
+            user.role = role
 
         if is_active is not None:
             user.is_active = is_active
@@ -85,6 +78,15 @@ class UserRepository(BaseRepository[User]):
         await self.session.refresh(user)
 
         return user
-        
 
-    
+    async def count_active_admins(self) -> int:
+        result = await self.session.execute(
+            select(func.count())
+            .select_from(User)
+            .where(
+                User.role == RoleName.ADMIN,
+                User.is_active.is_(True),
+            )
+        )
+
+        return result.scalar_one()

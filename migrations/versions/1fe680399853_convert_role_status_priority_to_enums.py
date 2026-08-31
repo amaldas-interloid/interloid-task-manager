@@ -6,10 +6,9 @@ Create Date: 2026-08-25 16:14:35.779623
 
 """
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from alembic import op
-
 
 revision: str = "1fe680399853"
 down_revision: str | Sequence[str] | None = "93dea0665de4"

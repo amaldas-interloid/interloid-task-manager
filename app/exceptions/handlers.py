@@ -18,6 +18,7 @@ async def app_exception_handler(
 
     return JSONResponse(
         status_code=exc.status_code,
+        headers=exc.headers,
         content={
             "success": False,
             "message": exc.message,
@@ -81,6 +82,7 @@ async def generic_exception_handler(
             },
         },
     )
+
 
 async def http_exception_handler(
     request: Request,

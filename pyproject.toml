@@ -24,7 +24,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
     "ruff>=0.16.1",
 ]
 
@@ -35,9 +39,6 @@ packages = ["app"]
 line-length = 88
 target-version = "py312"
 
-exclude = [
-    "migrations/versions",
-]
 
 [tool.ruff.lint]
 select = [
@@ -45,11 +46,29 @@ select = [
     "F",
     "I",
     "UP",
-] 
+    "B",
+    "S",
+    "ASYNC",
+    "RUF",
+]
 
 ignore = [
     "UP046",
-]  
+] 
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Header",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["S"] 
+"app/schemas/auth.py" = ["S105"]
+"tests/**/*.py" = ["S101", "S105"]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]
@@ -61,6 +80,16 @@ warn_required_dynamic_aliases = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+
+[tool.coverage.run]
+source = ["app"]
+concurrency = ["greenlet"]
+
+[tool.coverage.report]
+show_missing = true
 
 [build-system]
 requires = ["hatchling"]

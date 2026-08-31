@@ -36,9 +36,7 @@ class Task(BaseModelMixin, Base):
         Enum(
             TaskStatus,
             name="task_status",
-            values_callable=lambda enum_cls: [
-                member.value for member in enum_cls
-            ],
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
         ),
         nullable=False,
         default=TaskStatus.TODO,
@@ -49,9 +47,7 @@ class Task(BaseModelMixin, Base):
         Enum(
             TaskPriority,
             name="task_priority",
-            values_callable=lambda enum_cls: [
-                member.value for member in enum_cls
-            ],
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
         ),
         nullable=False,
         default=TaskPriority.MEDIUM,

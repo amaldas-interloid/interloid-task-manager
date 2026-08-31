@@ -9,6 +9,7 @@ class EmailAlreadyExistsException(AppException):
             status_code=409,
         )
 
+
 class InvalidCredentialsException(AppException):
     def __init__(self) -> None:
         super().__init__(
@@ -17,6 +18,7 @@ class InvalidCredentialsException(AppException):
             status_code=401,
             details=None,
         )
+
 
 class InvalidRefreshTokenException(AppException):
     def __init__(self) -> None:
@@ -27,18 +29,19 @@ class InvalidRefreshTokenException(AppException):
             details=None,
         )
 
+
 class UnauthorizedException(AppException):
-    def __init__(
-        self,
-        message: str = "Authentication required",
-        code: str = "UNAUTHORIZED",
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__(
-            message=message,
-            code=code,
+            message="Invalid or missing authentication credentials",
+            code="UNAUTHORIZED",
             status_code=401,
             details=None,
+            headers={
+                "WWW-Authenticate": "Bearer",
+            },
         )
+
 
 class InvalidCurrentPasswordException(AppException):
     def __init__(self) -> None:
@@ -49,11 +52,12 @@ class InvalidCurrentPasswordException(AppException):
             details=None,
         )
 
+
 class ForbiddenException(AppException):
     def __init__(
-            self,
-            message: str = "you do not have the permission to perform this action",
-            code: str = "FORBIDDEN",
+        self,
+        message: str = "you do not have the permission to perform this action",
+        code: str = "FORBIDDEN",
     ) -> None:
         super().__init__(
             message=message,
@@ -61,5 +65,3 @@ class ForbiddenException(AppException):
             status_code=403,
             details=None,
         )
-
-

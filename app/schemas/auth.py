@@ -23,6 +23,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(
         min_length=8,
+        max_length=128,
     )
     first_name: str = Field(
         min_length=1,
@@ -53,7 +54,10 @@ class UserResponse(BaseModel):
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(
+        min_length=8,
+        max_length=128,
+    )
 
 
 class LoginResponse(BaseModel):
@@ -63,21 +67,27 @@ class LoginResponse(BaseModel):
 
 
 class RefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: str = Field(
+        min_length=1,
+        max_length=256,
+    )
 
 
 class LogoutRequest(BaseModel):
-    refresh_token: str
+    refresh_token: str = Field(
+        min_length=1,
+        max_length=256,
+    )
 
 
 class ChangePasswordRequest(BaseModel):
-    current_password: str
-    new_password: str = Field(
-        min_length=8,
+    current_password: str = Field(
+        min_length=1,
+        max_length=128,
     )
+    new_password: str = Field(min_length=8, max_length=128)
 
     @field_validator("new_password")
     @classmethod
     def validate_new_password(cls, value: str) -> str:
         return validate_password_strength(value)
-

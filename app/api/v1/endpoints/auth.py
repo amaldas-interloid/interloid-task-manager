@@ -40,10 +40,11 @@ async def register(
         data=user,
     )
 
+
 @router.post(
     "/login",
     response_model=APIResponse[LoginResponse],
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
 )
 async def login(
     request: LoginRequest,
@@ -58,6 +59,7 @@ async def login(
         message="Login successful",
         data=tokens,
     )
+
 
 @router.post(
     "/refresh",
@@ -77,6 +79,7 @@ async def refresh_token(
         message="Access token refreshed successfully",
         data=tokens,
     )
+
 
 @router.post(
     "/logout",
@@ -99,29 +102,22 @@ async def logout(
         data=None,
     )
 
+
 @router.get(
     "/me",
     response_model=APIResponse[UserResponse],
     status_code=status.HTTP_200_OK,
 )
 async def get_me(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> APIResponse[UserResponse]:
-    user = UserResponse(
-        id=current_user.id,
-        email=current_user.email,
-        first_name=current_user.first_name,
-        last_name=current_user.last_name,
-        role=current_user.role.value,
-        is_active=current_user.is_active,
-        created_at=current_user.created_at,
-    )
-
+    user = UserResponse.model_validate(current_user)
     return APIResponse(
         success=True,
         message="Current user retrieved successfully",
         data=user,
     )
+
 
 @router.patch(
     "/change-password",
@@ -144,9 +140,3 @@ async def change_password(
         message="password changed successfully",
         data=None,
     )
-    
-
-
-    
-    
-    

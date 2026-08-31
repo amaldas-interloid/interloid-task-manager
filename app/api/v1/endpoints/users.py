@@ -17,6 +17,7 @@ router = APIRouter(
     tags=["Users"],
 )
 
+
 @router.get(
     "",
     response_model=APIResponse[UserListResponse],
@@ -33,14 +34,14 @@ async def list_users(
         ge=0,
     ),
     _: User = Depends(require_admin),
-    session: AsyncSession =Depends(get_db),
-) ->APIResponse[UserListResponse]:
+    session: AsyncSession = Depends(get_db),
+) -> APIResponse[UserListResponse]:
     repository = UserRepository(session)
     service = UserService(repository)
 
     users = await service.list_users(
-        limit = limit,
-        offset =offset,  
+        limit=limit,
+        offset=offset,
     )
 
     return APIResponse(
@@ -48,6 +49,7 @@ async def list_users(
         message="users retrieved successfully",
         data=users,
     )
+
 
 @router.patch(
     "/{id}",
@@ -72,5 +74,5 @@ async def update_user(
     return APIResponse(
         success=True,
         message="User updated successfully",
-        data=user, 
+        data=user,
     )

@@ -1,7 +1,12 @@
+import os
 from functools import cached_property
+from typing import Literal
 
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL
 
+ENV_FILE = os.getenv("ENV_FILE", ".env")
 
 class Settings(BaseSettings):
     # Application
@@ -21,27 +26,49 @@ class Settings(BaseSettings):
     DB_PORT: int
     DB_NAME: str
     DB_USER: str
-    DB_PASSWORD: str
+    DB_PASSWORD: SecretStr
 
     # JWT
-    JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str
+    JWT_SECRET_KEY: SecretStr
+    JWT_ALGORITHM: Literal["HS256", "HS384", "HS512"] = "HS256"
+
+    @field_validator("JWT_SECRET_KEY")
+    @classmethod
+    def validate_jwt_secret(
+        cls,
+        value: SecretStr,
+    ) -> SecretStr:
+        secret = value.get_secret_value()
+
+        if len(secret.encode("utf-8")) < 32:
+            raise ValueError("JWT_SECRET_KEY must be at least 32 bytes long")
+
+        return value
+
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_DAYS: int
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE,
+        env_file_encoding="utf-8",
         extra="ignore",
     )
 
     @cached_property
     def database_url(self) -> str:
-        return (
-            f"postgresql+asyncpg://"
-            f"{self.DB_USER}:{self.DB_PASSWORD}"
-            f"@{self.DB_HOST}:{self.DB_PORT}"
-            f"/{self.DB_NAME}"
+        url = URL.create(
+            drivername="postgresql+asyncpg",
+            username=self.DB_USER,
+            password=self.DB_PASSWORD.get_secret_value(),
+            host=self.DB_HOST,
+            port=self.DB_PORT,
+            database=self.DB_NAME,
         )
+
+        return url.render_as_string(
+            hide_password=False,
+        )
+        
 
 
 settings = Settings()

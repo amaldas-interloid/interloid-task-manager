@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.security import (
+    DUMMY_PASSWORD_HASH,
     create_access_token,
     create_refresh_token,
     hash_password,
@@ -33,7 +34,7 @@ class AuthService:
     def __init__(self, session: AsyncSession) -> None:
         self.user_repository = UserRepository(session)
         self.refresh_token_repository = RefreshTokenRepository(session)
-        
+
     async def register(
         self,
         request: RegisterRequest,
@@ -53,16 +54,7 @@ class AuthService:
 
         user = await self.user_repository.create(user)
 
-        return UserResponse(
-            id=user.id,
-            email=user.email,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            role=user.role.value,
-            is_active=user.is_active,
-            created_at=user.created_at,
-        )
-
+        return UserResponse.model_validate(user)
 
     async def login(
         self,
@@ -70,16 +62,11 @@ class AuthService:
     ) -> LoginResponse:
         user = await self.user_repository.get_by_email(request.email)
 
-        if user is None:
-            raise InvalidCredentialsException()
+        password_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
 
-        if not verify_password(
-            request.password,
-            user.password_hash,
-        ):
-            raise InvalidCredentialsException()
+        password_ok = verify_password(request.password, password_hash)
 
-        if not user.is_active:
+        if user is None or not password_ok or not user.is_active:
             raise InvalidCredentialsException()
 
         access_token = create_access_token(
@@ -106,13 +93,13 @@ class AuthService:
         )
 
     async def refresh_access_token(
-            self,
-            refresh_token: str,
-    )-> LoginResponse:
+        self,
+        refresh_token: str,
+    ) -> LoginResponse:
         refresh_token_hash = hash_refresh_token(refresh_token)
 
-        stored_token = (
-            await self.refresh_token_repository.get_by_token_hash(refresh_token_hash)
+        stored_token = await self.refresh_token_repository.get_by_token_hash(
+            refresh_token_hash
         )
         if stored_token is None:
             raise InvalidRefreshTokenException()
@@ -131,11 +118,11 @@ class AuthService:
             raise InvalidRefreshTokenException()
 
         await self.refresh_token_repository.revoke(
-        stored_token,
+            stored_token,
         )
 
         new_refresh_token = create_refresh_token()
-        
+
         new_refresh_token_hash = hash_refresh_token(
             new_refresh_token,
         )
@@ -143,8 +130,7 @@ class AuthService:
         new_refresh_token_record = RefreshToken(
             token_hash=new_refresh_token_hash,
             expires_at=(
-                datetime.now(UTC)
-                + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+                datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
             ),
             user_id=user.id,
         )
@@ -152,7 +138,6 @@ class AuthService:
         await self.refresh_token_repository.create(
             new_refresh_token_record,
         )
-
 
         access_token = create_access_token(
             subject=str(user.id),
@@ -163,39 +148,37 @@ class AuthService:
             refresh_token=new_refresh_token,
         )
 
-    async def logout (
+    async def logout(
         self,
         refresh_token: str,
     ) -> None:
         refresh_token_hash = hash_refresh_token(refresh_token)
 
-        stored_token = (
-            await self.refresh_token_repository.get_by_token_hash(
-                refresh_token_hash,
-            )
+        stored_token = await self.refresh_token_repository.get_by_token_hash(
+            refresh_token_hash,
         )
 
         if stored_token is None:
             raise InvalidRefreshTokenException()
 
         if stored_token.revoked_at is not None:
-            raise InvalidRefreshTokenException()
+            return
 
         await self.refresh_token_repository.revoke(
             stored_token,
         )
 
-    async def change_password (
-            self,
-            user: User,
-            request: ChangePasswordRequest,
+    async def change_password(
+        self,
+        user: User,
+        request: ChangePasswordRequest,
     ) -> None:
         if not verify_password(
             request.current_password,
             user.password_hash,
         ):
             raise InvalidCurrentPasswordException()
-        
+
         new_password_hash = hash_password(
             request.new_password,
         )
@@ -208,12 +191,3 @@ class AuthService:
         await self.refresh_token_repository.revoke_all_for_user(
             user.id,
         )
-        
-        
-
-    
-        
-
-        
-        
-        
