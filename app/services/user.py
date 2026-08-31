@@ -1,0 +1,77 @@
+from uuid import UUID
+
+from app.enums.role import RoleName
+from app.exceptions.user import (
+    LastActiveAdminException,
+    SelfModificationNotAllowedException,
+    UserNotFoundException,
+)
+from app.models.user import User
+from app.repositories.user import UserRepository
+from app.schemas.auth import UserResponse
+from app.schemas.user import (
+    UserListResponse,
+    UserUpdateRequest,
+)
+
+
+class UserService:
+    def __init__(self, user_repository: UserRepository) -> None:
+        self.user_repository = user_repository
+
+    async def list_users(
+        self,
+        limit: int,
+        offset: int,
+    ) -> UserListResponse:
+        users, total = await self.user_repository.list_users(
+            limit=limit,
+            offset=offset,
+        )
+
+        items = [UserResponse.model_validate(user) for user in users]
+
+        return UserListResponse(
+            items=items,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
+    async def update_user(
+        self,
+        id: UUID,
+        request: UserUpdateRequest,
+        current_admin: User,
+    ) -> UserResponse:
+        user = await self.user_repository.get_by_id(id)
+
+        if user is None:
+            raise UserNotFoundException()
+
+        if user.id == current_admin.id:
+            if request.role is not None and request.role != current_admin.role:
+                raise SelfModificationNotAllowedException()
+
+            if request.is_active is not None and request.is_active is False:
+                raise SelfModificationNotAllowedException()
+
+        target_is_active_admin = user.role == RoleName.ADMIN and user.is_active
+
+        removes_admin_access = request.is_active is False or (
+            request.role is not None and request.role != RoleName.ADMIN
+        )
+
+        if target_is_active_admin and removes_admin_access:
+            active_admin_count = await self.user_repository.count_active_admins()
+
+            if active_admin_count <= 1:
+                raise LastActiveAdminException
+
+        user = await self.user_repository.update_user(
+            user=user,
+            role=request.role,
+            is_active=request.is_active,
+        )
+
+        return UserResponse.model_validate(user)
