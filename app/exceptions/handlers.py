@@ -22,6 +22,7 @@ async def app_exception_handler(
         content={
             "success": False,
             "message": exc.message,
+            "data": None,
             "error": {
                 "code": exc.code,
                 "details": exc.details,
@@ -54,6 +55,7 @@ async def validation_exception_handler(
         content={
             "success": False,
             "message": "Validation failed",
+            "data": None,
             "error": {
                 "code": "VALIDATION_ERROR",
                 "details": details,
@@ -76,6 +78,7 @@ async def generic_exception_handler(
         content={
             "success": False,
             "message": "Internal server error",
+            "data": None,
             "error": {
                 "code": "INTERNAL_SERVER_ERROR",
                 "details": None,
@@ -105,6 +108,7 @@ async def http_exception_handler(
         content={
             "success": False,
             "message": str(exc.detail),
+            "data": None,
             "error": {
                 "code": code_by_status.get(
                     exc.status_code,

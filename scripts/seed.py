@@ -18,9 +18,7 @@ async def seed() -> None:
         users_by_email: dict[str, User] = {}
 
         # Create admin
-        result = await session.execute(
-            select(User).where(User.email == ADMIN["email"])
-        )
+        result = await session.execute(select(User).where(User.email == ADMIN["email"]))
         admin = result.scalar_one_or_none()
 
         if admin is None:

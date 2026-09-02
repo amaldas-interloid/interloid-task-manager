@@ -48,6 +48,7 @@ async def list_users(
         success=True,
         message="users retrieved successfully",
         data=users,
+        error=None,
     )
 
 
@@ -75,4 +76,5 @@ async def update_user(
         success=True,
         message="User updated successfully",
         data=user,
+        error=None,
     )

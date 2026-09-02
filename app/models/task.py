@@ -62,4 +62,3 @@ class Task(BaseModelMixin, Base):
     owner: Mapped["User"] = relationship(
         back_populates="tasks",
     )
-    

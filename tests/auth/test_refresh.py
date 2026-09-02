@@ -16,7 +16,7 @@ async def test_refresh_rotates_refresh_token(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -64,7 +64,7 @@ async def test_refresh_revokes_old_token_and_stores_new_token(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -108,7 +108,7 @@ async def test_reusing_rotated_refresh_token_returns_401(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -181,7 +181,7 @@ async def test_inactive_user_cannot_refresh_token(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )

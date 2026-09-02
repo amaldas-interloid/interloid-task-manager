@@ -12,7 +12,7 @@ async def test_change_password_success(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -42,7 +42,7 @@ async def test_old_password_fails_after_password_change(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -80,7 +80,7 @@ async def test_new_password_works_after_password_change(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -103,7 +103,7 @@ async def test_new_password_works_after_password_change(
     new_password_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "NewStrongPassword123!",
         },
     )
@@ -118,7 +118,7 @@ async def test_change_password_wrong_current_password_returns_401(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -147,7 +147,7 @@ async def test_change_password_revokes_all_refresh_tokens(
     first_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -155,7 +155,7 @@ async def test_change_password_revokes_all_refresh_tokens(
     second_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )

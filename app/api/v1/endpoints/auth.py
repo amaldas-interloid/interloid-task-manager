@@ -38,6 +38,7 @@ async def register(
         success=True,
         message="User registered successfully",
         data=user,
+        error=None,
     )
 
 
@@ -58,6 +59,7 @@ async def login(
         success=True,
         message="Login successful",
         data=tokens,
+        error=None,
     )
 
 
@@ -78,6 +80,7 @@ async def refresh_token(
         success=True,
         message="Access token refreshed successfully",
         data=tokens,
+        error=None,
     )
 
 
@@ -100,6 +103,7 @@ async def logout(
         success=True,
         message="Logged out successfully",
         data=None,
+        error=None,
     )
 
 
@@ -116,6 +120,7 @@ async def get_me(
         success=True,
         message="Current user retrieved successfully",
         data=user,
+        error=None,
     )
 
 
@@ -136,7 +141,5 @@ async def change_password(
     )
 
     return APIResponse(
-        success=True,
-        message="password changed successfully",
-        data=None,
+        success=True, message="password changed successfully", data=None, error=None
     )

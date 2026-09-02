@@ -9,7 +9,7 @@ async def test_normal_user_cannot_list_users(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -36,7 +36,7 @@ async def test_admin_can_list_users(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -67,7 +67,7 @@ async def test_admin_can_deactivate_user(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -100,7 +100,7 @@ async def test_admin_can_promote_user(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -131,7 +131,7 @@ async def test_admin_cannot_deactivate_self(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -158,7 +158,7 @@ async def test_admin_cannot_demote_self(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -185,7 +185,7 @@ async def test_last_active_admin_cannot_be_deactivated(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -248,7 +248,7 @@ async def test_admin_can_deactivate_another_admin_when_one_remains(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )

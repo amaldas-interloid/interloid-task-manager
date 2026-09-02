@@ -13,7 +13,7 @@ async def test_login_success(
     response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -35,7 +35,7 @@ async def test_login_wrong_password_returns_401(
     response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "wrongpassword123!",
         },
     )
@@ -75,7 +75,7 @@ async def test_login_stores_refresh_token_hash(
     response = await client.post(
         "api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
