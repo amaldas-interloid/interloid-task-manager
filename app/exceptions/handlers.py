@@ -43,7 +43,6 @@ async def validation_exception_handler(
     for error in exc.errors():
         location = error.get("loc", [])
 
-        # Remove "body", "query", "path", etc.
         field = str(location[-1]) if location else "request"
 
         message = str(error.get("msg", "Invalid value"))

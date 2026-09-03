@@ -386,3 +386,174 @@ async def test_update_task_rejects_invalid_priority(
     assert body["message"] == "Validation failed"
     assert body["data"] is None
     assert body["error"]["code"] == "VALIDATION_ERROR"
+
+
+@pytest.mark.anyio
+async def test_update_task_with_null_title_returns_422(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    create_response = await client.post(
+        "/api/v1/tasks",
+        json={
+            "title": "Null title test",
+            "description": "Testing null title",
+            "status": "Todo",
+            "priority": "Medium",
+            "due_date": "2026-09-10",
+        },
+        headers=headers,
+    )
+
+    assert create_response.status_code == 201
+
+    task_id = create_response.json()["data"]["id"]
+
+    response = await client.patch(
+        f"/api/v1/tasks/{task_id}",
+        json={
+            "title": None,
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+
+    body = response.json()
+
+    assert body["success"] is False
+    assert body["message"] == "Validation failed"
+    assert body["data"] is None
+    assert body["error"]["code"] == "VALIDATION_ERROR"
+
+    assert "title cannot be null" in str(body["error"]["details"])
+
+
+@pytest.mark.anyio
+async def test_update_task_with_null_status_returns_422(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    create_response = await client.post(
+        "/api/v1/tasks",
+        json={
+            "title": "Null status test",
+            "description": "Testing null status",
+            "status": "Todo",
+            "priority": "Medium",
+            "due_date": "2026-09-10",
+        },
+        headers=headers,
+    )
+
+    assert create_response.status_code == 201
+
+    task_id = create_response.json()["data"]["id"]
+
+    response = await client.patch(
+        f"/api/v1/tasks/{task_id}",
+        json={
+            "status": None,
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+
+    body = response.json()
+
+    assert body["success"] is False
+    assert body["message"] == "Validation failed"
+    assert body["data"] is None
+    assert body["error"]["code"] == "VALIDATION_ERROR"
+
+    assert "status cannot be null" in str(body["error"]["details"])
+
+
+@pytest.mark.anyio
+async def test_update_task_with_null_priority_returns_422(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    create_response = await client.post(
+        "/api/v1/tasks",
+        json={
+            "title": "Null priority test",
+            "description": "Testing null priority",
+            "status": "Todo",
+            "priority": "Medium",
+            "due_date": "2026-09-10",
+        },
+        headers=headers,
+    )
+
+    assert create_response.status_code == 201
+
+    task_id = create_response.json()["data"]["id"]
+
+    response = await client.patch(
+        f"/api/v1/tasks/{task_id}",
+        json={
+            "priority": None,
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+
+    body = response.json()
+
+    assert body["success"] is False
+    assert body["message"] == "Validation failed"
+    assert body["data"] is None
+    assert body["error"]["code"] == "VALIDATION_ERROR"
+
+    assert "priority cannot be null" in str(body["error"]["details"])

@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.enums.task import TaskPriority, TaskStatus
 
@@ -16,6 +16,14 @@ class TaskCreateRequest(BaseModel):
     priority: TaskPriority = TaskPriority.MEDIUM
     due_date: date | None
 
+    @field_validator("title", mode="before")
+    @classmethod
+    def validate_title_not_null(cls, value: object) -> object:
+        if value is None:
+            raise ValueError("title cannot be null")
+
+        return value
+
 
 class TaskUpdateRequest(BaseModel):
     title: str | None = Field(
@@ -27,6 +35,20 @@ class TaskUpdateRequest(BaseModel):
     status: TaskStatus | None = None
     priority: TaskPriority | None = None
     due_date: date | None = None
+
+    @model_validator(mode="after")
+    def validate_non_nullable_fields(self) -> "TaskUpdateRequest":
+        non_nullable_fields = (
+            "title",
+            "status",
+            "priority",
+        )
+
+        for field in non_nullable_fields:
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+
+        return self
 
 
 class TaskResponse(BaseModel):
