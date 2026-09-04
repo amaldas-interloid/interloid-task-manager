@@ -18,7 +18,6 @@ from app.middleware.cors import setup_cors
 from app.middleware.process_time import ProcessTimeMiddleware
 from app.middleware.request_id import RequestIDMiddleware
 from app.middleware.request_logging import RequestLoggingMiddleware
-from app.models import registry  # noqa: F401
 
 setup_logging()
 

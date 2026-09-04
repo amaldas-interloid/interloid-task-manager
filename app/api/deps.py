@@ -11,15 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_token
 from app.db.dependencies import get_db
-from app.enums.role import RoleName
-from app.enums.task import TaskPriority, TaskStatus
-from app.enums.token import TokenType
+from app.enums import RoleName, TaskPriority, TaskStatus, TokenType
 from app.exceptions.auth import ForbiddenException, UnauthorizedException
 from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.task import TaskListQuery
 
-bearer_scheme = HTTPBearer(auto_error=True)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(

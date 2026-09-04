@@ -14,7 +14,7 @@ from uuid6 import uuid7
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.dependencies import get_db
-from app.enums.role import RoleName
+from app.enums import RoleName
 from app.main import app
 from app.models.user import User
 

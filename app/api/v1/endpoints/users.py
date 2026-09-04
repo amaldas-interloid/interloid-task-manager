@@ -4,6 +4,12 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_admin
+from app.api.responses import (
+    FORBIDDEN_RESPONSE,
+    NOT_FOUND_RESPONSE,
+    UNAUTHORIZED_RESPONSE,
+    VALIDATION_ERROR_RESPONSE,
+)
 from app.db.dependencies import get_db
 from app.models.user import User
 from app.repositories.user import UserRepository
@@ -22,6 +28,11 @@ router = APIRouter(
     "",
     response_model=APIResponse[UserListResponse],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def list_users(
     limit: int = Query(
@@ -48,7 +59,6 @@ async def list_users(
         success=True,
         message="users retrieved successfully",
         data=users,
-        error=None,
     )
 
 
@@ -56,6 +66,12 @@ async def list_users(
     "/{id}",
     response_model=APIResponse[UserResponse],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def update_user(
     id: UUID,
@@ -76,5 +92,4 @@ async def update_user(
         success=True,
         message="User updated successfully",
         data=user,
-        error=None,
     )

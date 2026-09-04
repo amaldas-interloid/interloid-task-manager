@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -51,7 +52,11 @@ class AuthService:
             last_name=request.last_name,
         )
 
-        user = await self.user_repository.create(user)
+        try:
+            async with self.session.begin_nested():
+                user = await self.user_repository.create(user)
+        except IntegrityError as exc:
+            raise EmailAlreadyExistsException() from exc
 
         return UserResponse.model_validate(user)
 
@@ -97,7 +102,7 @@ class AuthService:
     ) -> LoginResponse:
         refresh_token_hash = hash_refresh_token(refresh_token)
 
-        stored_token = await self.refresh_token_repository.get_by_token_hash(
+        stored_token = await self.refresh_token_repository.get_by_token_hash_for_update(
             refresh_token_hash
         )
         if stored_token is None:
@@ -153,7 +158,7 @@ class AuthService:
     ) -> None:
         refresh_token_hash = hash_refresh_token(refresh_token)
 
-        stored_token = await self.refresh_token_repository.get_by_token_hash(
+        stored_token = await self.refresh_token_repository.get_by_token_hash_for_update(
             refresh_token_hash,
         )
 

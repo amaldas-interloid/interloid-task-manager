@@ -10,26 +10,21 @@ ENV_FILE = os.getenv("ENV_FILE", ".env")
 
 
 class Settings(BaseSettings):
-    # Application
     APP_NAME: str
     APP_VERSION: str
 
-    # Server
     HOST: str
     PORT: int
 
-    # Environment
     DEBUG: bool
     LOG_LEVEL: str
 
-    # Database
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: SecretStr
 
-    # JWT
     JWT_SECRET_KEY: SecretStr
     JWT_ALGORITHM: Literal["HS256", "HS384", "HS512"] = "HS256"
 

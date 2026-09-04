@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from app.core.security import hash_password
 from app.db.session import AsyncSessionLocal
-from app.enums.role import RoleName
+from app.enums import RoleName
 from app.enums.task import TaskPriority, TaskStatus
 from app.models.refresh_token import RefreshToken  # noqa: F401
 from app.models.task import Task

@@ -79,14 +79,16 @@ class UserRepository(BaseRepository[User]):
 
         return user
 
-    async def count_active_admins(self) -> int:
+    async def get_active_admins_for_update(
+        self,
+    ) -> list[User]:
         result = await self.session.execute(
-            select(func.count())
-            .select_from(User)
+            select(User)
             .where(
                 User.role == RoleName.ADMIN,
                 User.is_active.is_(True),
             )
+            .with_for_update()
         )
 
-        return result.scalar_one()
+        return list(result.scalars().all())

@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.enums.role import RoleName
+from app.enums import RoleName
 from app.exceptions.task import TaskNotFoundException
 from app.models.task import Task
 from app.models.user import User

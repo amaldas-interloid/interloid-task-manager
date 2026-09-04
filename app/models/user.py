@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.enums.role import RoleName
+from app.enums import RoleName
 from app.models.base_model import BaseModelMixin
 
 if TYPE_CHECKING:

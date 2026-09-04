@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
-from app.enums.role import RoleName
+from app.enums import RoleName
 
 
 def validate_password_strength(value: str) -> str:

@@ -110,7 +110,6 @@ async def test_user_cannot_get_another_users_task(
     client: AsyncClient,
     test_user: User,
 ) -> None:
-
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
@@ -192,7 +191,6 @@ async def test_admin_can_get_another_users_task(
     admin_user: User,
     test_user: User,
 ) -> None:
-
     user_login = await client.post(
         "/api/v1/auth/login",
         json={

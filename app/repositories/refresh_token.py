@@ -12,14 +12,16 @@ class RefreshTokenRepository(BaseRepository[RefreshToken]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, RefreshToken)
 
-    async def get_by_token_hash(
+    async def get_by_token_hash_for_update(
         self,
         token_hash: str,
     ) -> RefreshToken | None:
         result = await self.session.execute(
-            select(RefreshToken).where(
+            select(RefreshToken)
+            .where(
                 RefreshToken.token_hash == token_hash,
             )
+            .with_for_update()
         )
 
         return result.scalar_one_or_none()

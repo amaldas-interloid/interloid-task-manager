@@ -5,6 +5,11 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_task_list_query
+from app.api.responses import (
+    NOT_FOUND_RESPONSE,
+    UNAUTHORIZED_RESPONSE,
+    VALIDATION_ERROR_RESPONSE,
+)
 from app.db.dependencies import get_db
 from app.models.user import User
 from app.schemas.common import APIResponse
@@ -27,6 +32,10 @@ router = APIRouter(
     "",
     response_model=APIResponse[TaskResponse],
     status_code=status.HTTP_201_CREATED,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def create_task(
     request: TaskCreateRequest,
@@ -41,10 +50,8 @@ async def create_task(
     )
 
     return APIResponse(
-        success=True,
         message="Task created successfully",
         data=task,
-        error=None,
     )
 
 
@@ -52,6 +59,10 @@ async def create_task(
     "",
     response_model=APIResponse[TaskListResponse],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def get_tasks(
     query: Annotated[
@@ -75,10 +86,8 @@ async def get_tasks(
     )
 
     return APIResponse(
-        success=True,
         message="Tasks fetched successfully",
         data=result,
-        error=None,
     )
 
 
@@ -86,6 +95,11 @@ async def get_tasks(
     "/{id}",
     response_model=APIResponse[TaskResponse],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def get_task_by_id(
     id: UUID,
@@ -100,10 +114,8 @@ async def get_task_by_id(
     )
 
     return APIResponse(
-        success=True,
         message="Task fetched successfully",
         data=task,
-        error=None,
     )
 
 
@@ -111,6 +123,11 @@ async def get_task_by_id(
     "/{id}",
     response_model=APIResponse[TaskResponse],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def update_task(
     id: UUID,
@@ -127,10 +144,8 @@ async def update_task(
     )
 
     return APIResponse(
-        success=True,
         message="Task updated successfully",
         data=task,
-        error=None,
     )
 
 
@@ -138,6 +153,11 @@ async def update_task(
     "/{id}",
     response_model=APIResponse[None],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def delete_task(
     id: UUID,
@@ -152,8 +172,5 @@ async def delete_task(
     )
 
     return APIResponse(
-        success=True,
         message="Task deleted successfully",
-        data=None,
-        error=None,
     )

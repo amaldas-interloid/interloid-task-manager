@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from app.enums.role import RoleName
+from app.enums import RoleName
 from app.exceptions.user import (
     LastActiveAdminException,
     SelfModificationNotAllowedException,
@@ -63,10 +63,10 @@ class UserService:
         )
 
         if target_is_active_admin and removes_admin_access:
-            active_admin_count = await self.user_repository.count_active_admins()
+            active_admins = await self.user_repository.get_active_admins_for_update()
 
-            if active_admin_count <= 1:
-                raise LastActiveAdminException
+            if len(active_admins) <= 1:
+                raise LastActiveAdminException()
 
         user = await self.user_repository.update_user(
             user=user,
