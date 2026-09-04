@@ -42,6 +42,7 @@ class BaseRepository(Generic[ModelType]):
         obj: ModelType,
     ) -> None:
         await self.session.delete(obj)
+        await self.session.flush()
 
     async def exists(
         self,

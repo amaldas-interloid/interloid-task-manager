@@ -2,7 +2,7 @@ import os
 from functools import cached_property
 from typing import Literal
 
-from pydantic import SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
@@ -41,8 +41,17 @@ class Settings(BaseSettings):
 
         return value
 
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    REFRESH_TOKEN_EXPIRE_DAYS: int
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
+        default=60,
+        ge=1,
+        le=1440,
+    )
+
+    REFRESH_TOKEN_EXPIRE_DAYS: int = Field(
+        default=7,
+        ge=1,
+        le=90,
+    )
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

@@ -33,6 +33,7 @@ from app.schemas.auth import (
 
 class AuthService:
     def __init__(self, session: AsyncSession) -> None:
+        self.session = session
         self.user_repository = UserRepository(session)
         self.refresh_token_repository = RefreshTokenRepository(session)
 
