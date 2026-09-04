@@ -1,0 +1,96 @@
+[project]
+name = "fastapi-backend-starter"
+version = "0.1.0"
+description = "Production-ready FastAPI starter template"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Amal Das", email = "amaldas@interloid.com" }
+]
+
+dependencies = [
+    "fastapi>=0.141.1",
+    "uvicorn>=0.35.0",
+    "pydantic-settings>=2.14.2",
+    "python-dotenv>=1.2.2",
+    "sqlalchemy>=2.0.51",
+    "asyncpg>=0.31.0",
+    "alembic>=1.19.0",
+    "pwdlib[argon2]>=0.3.0",
+    "pyjwt>=2.13.0",
+    "uuid6>=2024.7.10",
+    "email-validator>=2.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+    "S",
+    "ASYNC",
+    "RUF",
+]
+
+ignore = [
+    "UP046",
+] 
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Header",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["S"] 
+"app/schemas/auth.py" = ["S105"]
+"tests/**/*.py" = ["S101", "S105"]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = false
+init_typed = false
+warn_required_dynamic_aliases = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+
+[tool.coverage.run]
+source = ["app"]
+concurrency = ["greenlet"]
+
+[tool.coverage.report]
+show_missing = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
