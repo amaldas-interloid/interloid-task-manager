@@ -399,8 +399,6 @@ Email: saniya@example.com
 Password: pass1234
 ```
 
-Do not use these demo credentials in a production environment.
-
 ### 6. Run the Application
 
 Start the FastAPI development server:
@@ -542,8 +540,6 @@ Test coverage includes:
 * Task pagination
 * Request validation
 * Explicit `null` PATCH validation
-
-Tests should use the dedicated test environment and test database rather than the production database.
 
 ---
 
@@ -805,8 +801,5 @@ Swagger UI can be used to test:
 * Task ownership is determined from the authenticated user.
 * Database constraints provide final protection against duplicate emails.
 * Database row locking is used for concurrency-sensitive operations.
-* Secrets and production credentials must not be committed to Git.
-* Demo credentials must not be used in production.
-
 ---
 

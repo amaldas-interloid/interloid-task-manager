@@ -45,7 +45,7 @@ async def list_users(
         ge=0,
     ),
     _: User = Depends(require_admin),
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[UserListResponse]:
     repository = UserRepository(session)
     service = UserService(repository)
@@ -77,7 +77,7 @@ async def update_user(
     id: UUID,
     request: UserUpdateRequest,
     current_admin: User = Depends(require_admin),
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[UserResponse]:
     repository = UserRepository(session)
     service = UserService(repository)

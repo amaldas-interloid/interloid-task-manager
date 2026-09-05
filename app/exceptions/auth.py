@@ -60,3 +60,12 @@ class ForbiddenException(AppException):
             code=code,
             status_code=403,
         )
+
+
+class SamePasswordException(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            message="New password must be different from the current password",
+            code="SAME_PASSWORD",
+            status_code=422,
+        )

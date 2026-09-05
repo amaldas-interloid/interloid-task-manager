@@ -40,7 +40,7 @@ router = APIRouter(
 async def create_task(
     request: TaskCreateRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[TaskResponse]:
     service = TaskService(db)
 
@@ -75,7 +75,7 @@ async def get_tasks(
     ],
     db: Annotated[
         AsyncSession,
-        Depends(get_db),
+        Depends(get_db, scope="function"),
     ],
 ) -> APIResponse[TaskListResponse]:
     service = TaskService(db)
@@ -104,7 +104,7 @@ async def get_tasks(
 async def get_task_by_id(
     id: UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[TaskResponse]:
     service = TaskService(db)
 
@@ -133,7 +133,7 @@ async def update_task(
     id: UUID,
     request: TaskUpdateRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[TaskResponse]:
     service = TaskService(db)
 
@@ -162,7 +162,7 @@ async def update_task(
 async def delete_task(
     id: UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[None]:
     service = TaskService(db)
 

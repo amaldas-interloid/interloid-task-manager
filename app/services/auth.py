@@ -17,6 +17,8 @@ from app.exceptions.auth import (
     InvalidCredentialsException,
     InvalidCurrentPasswordException,
     InvalidRefreshTokenException,
+    SamePasswordException,
+    UnauthorizedException,
 )
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
@@ -65,7 +67,7 @@ class AuthService:
         self,
         request: LoginRequest,
     ) -> LoginResponse:
-        user = await self.user_repository.get_by_email(request.email)
+        user = await self.user_repository.get_by_email_for_update(request.email)
 
         password_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
 
@@ -178,21 +180,34 @@ class AuthService:
         user: User,
         request: ChangePasswordRequest,
     ) -> None:
+        locked_user = await self.user_repository.get_by_id_for_update(
+            user.id,
+        )
+
+        if locked_user is None:
+            raise UnauthorizedException()
+
         if not verify_password(
             request.current_password,
-            user.password_hash,
+            locked_user.password_hash,
         ):
             raise InvalidCurrentPasswordException()
+
+        if verify_password(
+            request.new_password,
+            locked_user.password_hash,
+        ):
+            raise SamePasswordException()
 
         new_password_hash = hash_password(
             request.new_password,
         )
 
         await self.user_repository.update_password(
-            user,
+            locked_user,
             new_password_hash,
         )
 
         await self.refresh_token_repository.revoke_all_for_user(
-            user.id,
+            locked_user.id,
         )

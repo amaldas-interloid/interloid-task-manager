@@ -40,7 +40,7 @@ router = APIRouter(
 )
 async def register(
     request: RegisterRequest,
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[UserResponse]:
     service = AuthService(session)
 
@@ -63,7 +63,7 @@ async def register(
 )
 async def login(
     request: LoginRequest,
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[LoginResponse]:
     service = AuthService(session)
 
@@ -86,7 +86,7 @@ async def login(
 )
 async def refresh_token(
     request: RefreshRequest,
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[LoginResponse]:
     service = AuthService(session)
 
@@ -108,7 +108,7 @@ async def refresh_token(
 )
 async def logout(
     request: RefreshRequest,
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[None]:
     service = AuthService(session)
 
@@ -151,7 +151,7 @@ async def get_me(
 async def change_password(
     request: ChangePasswordRequest,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[None]:
     service = AuthService(session)
     await service.change_password(
