@@ -7,13 +7,13 @@ from app.models.refresh_token import RefreshToken
 
 
 async def test_login_success(
-        client: AsyncClient,
-        test_user,
+    client: AsyncClient,
+    test_user,
 ) -> None:
     response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -28,15 +28,14 @@ async def test_login_success(
     assert body["data"]["token_type"] == "bearer"
 
 
-
 async def test_login_wrong_password_returns_401(
-        client: AsyncClient,
-        test_user,
+    client: AsyncClient,
+    test_user,
 ) -> None:
     response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "wrongpassword123!",
         },
     )
@@ -49,13 +48,12 @@ async def test_login_wrong_password_returns_401(
     assert body["error"]["code"] == "INVALID_CREDENTIALS"
 
 
-
 async def test_login_unkown_email_returns_401(
-        client: AsyncClient,
+    client: AsyncClient,
 ) -> None:
     response = await client.post(
         "/api/v1/auth/login",
-         json={
+        json={
             "email": "unknown@example.com",
             "password": "StrongPassword123!",
         },
@@ -68,15 +66,16 @@ async def test_login_unkown_email_returns_401(
     assert body["success"] is False
     assert body["error"]["code"] == "INVALID_CREDENTIALS"
 
+
 async def test_login_stores_refresh_token_hash(
-        client: AsyncClient,
-        db_session: AsyncSession,
-        test_user,
+    client: AsyncClient,
+    db_session: AsyncSession,
+    test_user,
 ) -> None:
     response = await client.post(
         "api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -97,12 +96,6 @@ async def test_login_stores_refresh_token_hash(
 
     assert stored_token is not None
 
-    assert stored_token.token_hash == hash_refresh_token(
-        refresh_token
-    )
+    assert stored_token.token_hash == hash_refresh_token(refresh_token)
 
     assert stored_token.revoked_at is None
-
-
-
-

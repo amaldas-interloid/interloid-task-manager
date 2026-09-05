@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -14,14 +15,34 @@ from uuid6 import uuid7
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.dependencies import get_db
-from app.enums.role import RoleName
+from app.enums import RoleName
 from app.main import app
 from app.models.user import User
 
-if os.getenv("ENV_FILE") != ".env.test":
-    raise RuntimeError(
-        "Tests must be run with ENV_FILE=.env.test"
+
+def validate_test_database() -> None:
+    if os.getenv("ENV_FILE") != ".env.test":
+        raise RuntimeError("Tests must be run with ENV_FILE=.env.test")
+
+    database_url = make_url(
+        settings.database_url,
     )
+
+    expected_host = "ep-bold-bird-b3n4b2j8-pooler.c-4.ap-southeast-1.aws.neon.tech"
+    expected_database = "neondb"
+    expected_user = "neondb_owner"
+
+    if (
+        database_url.host != expected_host
+        or database_url.database != expected_database
+        or database_url.username != expected_user
+    ):
+        raise RuntimeError(
+            "Refusing to run tests against an unapproved database destination"
+        )
+
+
+validate_test_database()
 
 
 test_engine = create_async_engine(
@@ -97,7 +118,7 @@ async def test_user(
 ) -> User:
     user = User(
         id=uuid7(),
-        email= "testuser@example.com",
+        email="testuser@example.com",
         password_hash=hash_password("StrongPassword123!"),
         first_name="Test",
         last_name="User",
@@ -110,6 +131,7 @@ async def test_user(
     await db_session.refresh(user)
 
     return user
+
 
 @pytest.fixture
 async def inactive_user(
@@ -131,6 +153,7 @@ async def inactive_user(
 
     return user
 
+
 @pytest.fixture
 async def admin_user(
     db_session: AsyncSession,
@@ -150,6 +173,7 @@ async def admin_user(
     await db_session.refresh(user)
 
     return user
+
 
 @pytest.fixture
 async def second_admin(

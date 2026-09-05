@@ -7,21 +7,21 @@ from app.models.refresh_token import RefreshToken
 
 
 async def test_logout_revokes_refresh_token(
-        client: AsyncClient,
-        db_session: AsyncSession,
-        test_user,
+    client: AsyncClient,
+    db_session: AsyncSession,
+    test_user,
 ) -> None:
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
 
     assert login_response.status_code == 200
 
-    refresh_token  = login_response.json()["data"]["refresh_token"]
+    refresh_token = login_response.json()["data"]["refresh_token"]
 
     logout_response = await client.post(
         "/api/v1/auth/logout",
@@ -53,7 +53,7 @@ async def test_logout_already_revoked_token_returns_200(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -77,6 +77,7 @@ async def test_logout_already_revoked_token_returns_200(
     )
 
     assert second_logout.status_code == 200
+
 
 async def test_logout_invalid_refresh_token_returns_401(
     client: AsyncClient,
@@ -103,7 +104,7 @@ async def test_logged_out_refresh_token_cannot_be_refreshed(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )

@@ -1,24 +1,28 @@
+from datetime import date
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, Query
+from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_token
 from app.db.dependencies import get_db
-from app.enums.role import RoleName
-from app.enums.token import TokenType
+from app.enums import RoleName, TaskPriority, TaskStatus, TokenType
 from app.exceptions.auth import ForbiddenException, UnauthorizedException
 from app.models.user import User
 from app.repositories.user import UserRepository
+from app.schemas.task import TaskListQuery
 
-bearer_scheme = HTTPBearer(auto_error=True)
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> User:
     if credentials is None:
         raise UnauthorizedException()
@@ -59,8 +63,34 @@ async def get_current_user(
 async def require_admin(
     current_user: User = Depends(get_current_user),
 ) -> User:
-
     if current_user.role != RoleName.ADMIN:
         raise ForbiddenException()
 
     return current_user
+
+
+def get_task_list_query(
+    owner_id: Annotated[UUID | None, Query()] = None,
+    status: Annotated[TaskStatus | None, Query()] = None,
+    priority: Annotated[TaskPriority | None, Query()] = None,
+    due_from: Annotated[date | None, Query()] = None,
+    due_to: Annotated[date | None, Query()] = None,
+    search: Annotated[str | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> TaskListQuery:
+    try:
+        return TaskListQuery(
+            owner_id=owner_id,
+            status=status,
+            priority=priority,
+            due_from=due_from,
+            due_to=due_to,
+            search=search,
+            limit=limit,
+            offset=offset,
+        )
+    except ValidationError as exc:
+        raise RequestValidationError(
+            exc.errors(),
+        ) from exc

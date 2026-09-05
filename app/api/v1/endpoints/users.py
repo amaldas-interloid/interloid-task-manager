@@ -4,6 +4,12 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_admin
+from app.api.responses import (
+    FORBIDDEN_RESPONSE,
+    NOT_FOUND_RESPONSE,
+    UNAUTHORIZED_RESPONSE,
+    VALIDATION_ERROR_RESPONSE,
+)
 from app.db.dependencies import get_db
 from app.models.user import User
 from app.repositories.user import UserRepository
@@ -22,6 +28,11 @@ router = APIRouter(
     "",
     response_model=APIResponse[UserListResponse],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def list_users(
     limit: int = Query(
@@ -34,7 +45,7 @@ async def list_users(
         ge=0,
     ),
     _: User = Depends(require_admin),
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[UserListResponse]:
     repository = UserRepository(session)
     service = UserService(repository)
@@ -55,12 +66,18 @@ async def list_users(
     "/{id}",
     response_model=APIResponse[UserResponse],
     status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+        **FORBIDDEN_RESPONSE,
+        **NOT_FOUND_RESPONSE,
+        **VALIDATION_ERROR_RESPONSE,
+    },
 )
 async def update_user(
     id: UUID,
     request: UserUpdateRequest,
     current_admin: User = Depends(require_admin),
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[UserResponse]:
     repository = UserRepository(session)
     service = UserService(repository)

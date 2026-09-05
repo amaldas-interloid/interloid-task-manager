@@ -2,33 +2,29 @@ import os
 from functools import cached_property
 from typing import Literal
 
-from pydantic import SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
 ENV_FILE = os.getenv("ENV_FILE", ".env")
 
+
 class Settings(BaseSettings):
-    # Application
     APP_NAME: str
     APP_VERSION: str
 
-    # Server
     HOST: str
     PORT: int
 
-    # Environment
     DEBUG: bool
     LOG_LEVEL: str
 
-    # Database
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: SecretStr
 
-    # JWT
     JWT_SECRET_KEY: SecretStr
     JWT_ALGORITHM: Literal["HS256", "HS384", "HS512"] = "HS256"
 
@@ -45,8 +41,17 @@ class Settings(BaseSettings):
 
         return value
 
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    REFRESH_TOKEN_EXPIRE_DAYS: int
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
+        default=60,
+        ge=1,
+        le=1440,
+    )
+
+    REFRESH_TOKEN_EXPIRE_DAYS: int = Field(
+        default=7,
+        ge=1,
+        le=90,
+    )
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
@@ -68,7 +73,6 @@ class Settings(BaseSettings):
         return url.render_as_string(
             hide_password=False,
         )
-        
 
 
 settings = Settings()

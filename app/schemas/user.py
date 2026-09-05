@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.enums.role import RoleName
+from app.enums import RoleName
 from app.schemas.auth import UserResponse
 
 

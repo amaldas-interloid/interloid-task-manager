@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -16,6 +17,8 @@ from app.exceptions.auth import (
     InvalidCredentialsException,
     InvalidCurrentPasswordException,
     InvalidRefreshTokenException,
+    SamePasswordException,
+    UnauthorizedException,
 )
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
@@ -32,6 +35,7 @@ from app.schemas.auth import (
 
 class AuthService:
     def __init__(self, session: AsyncSession) -> None:
+        self.session = session
         self.user_repository = UserRepository(session)
         self.refresh_token_repository = RefreshTokenRepository(session)
 
@@ -39,7 +43,6 @@ class AuthService:
         self,
         request: RegisterRequest,
     ) -> UserResponse:
-
         if await self.user_repository.email_exists(request.email):
             raise EmailAlreadyExistsException()
 
@@ -52,7 +55,11 @@ class AuthService:
             last_name=request.last_name,
         )
 
-        user = await self.user_repository.create(user)
+        try:
+            async with self.session.begin_nested():
+                user = await self.user_repository.create(user)
+        except IntegrityError as exc:
+            raise EmailAlreadyExistsException() from exc
 
         return UserResponse.model_validate(user)
 
@@ -60,7 +67,7 @@ class AuthService:
         self,
         request: LoginRequest,
     ) -> LoginResponse:
-        user = await self.user_repository.get_by_email(request.email)
+        user = await self.user_repository.get_by_email_for_update(request.email)
 
         password_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
 
@@ -98,7 +105,7 @@ class AuthService:
     ) -> LoginResponse:
         refresh_token_hash = hash_refresh_token(refresh_token)
 
-        stored_token = await self.refresh_token_repository.get_by_token_hash(
+        stored_token = await self.refresh_token_repository.get_by_token_hash_for_update(
             refresh_token_hash
         )
         if stored_token is None:
@@ -154,7 +161,7 @@ class AuthService:
     ) -> None:
         refresh_token_hash = hash_refresh_token(refresh_token)
 
-        stored_token = await self.refresh_token_repository.get_by_token_hash(
+        stored_token = await self.refresh_token_repository.get_by_token_hash_for_update(
             refresh_token_hash,
         )
 
@@ -173,21 +180,34 @@ class AuthService:
         user: User,
         request: ChangePasswordRequest,
     ) -> None:
+        locked_user = await self.user_repository.get_by_id_for_update(
+            user.id,
+        )
+
+        if locked_user is None:
+            raise UnauthorizedException()
+
         if not verify_password(
             request.current_password,
-            user.password_hash,
+            locked_user.password_hash,
         ):
             raise InvalidCurrentPasswordException()
+
+        if verify_password(
+            request.new_password,
+            locked_user.password_hash,
+        ):
+            raise SamePasswordException()
 
         new_password_hash = hash_password(
             request.new_password,
         )
 
         await self.user_repository.update_password(
-            user,
+            locked_user,
             new_password_hash,
         )
 
         await self.refresh_token_repository.revoke_all_for_user(
-            user.id,
+            locked_user.id,
         )

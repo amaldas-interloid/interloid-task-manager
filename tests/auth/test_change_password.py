@@ -12,7 +12,7 @@ async def test_change_password_success(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -42,7 +42,7 @@ async def test_old_password_fails_after_password_change(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -72,6 +72,7 @@ async def test_old_password_fails_after_password_change(
 
     assert old_password_login.status_code == 401
 
+
 async def test_new_password_works_after_password_change(
     client: AsyncClient,
     test_user,
@@ -79,7 +80,7 @@ async def test_new_password_works_after_password_change(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -102,12 +103,13 @@ async def test_new_password_works_after_password_change(
     new_password_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "NewStrongPassword123!",
         },
     )
 
     assert new_password_login.status_code == 200
+
 
 async def test_change_password_wrong_current_password_returns_401(
     client: AsyncClient,
@@ -116,7 +118,7 @@ async def test_change_password_wrong_current_password_returns_401(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -136,6 +138,7 @@ async def test_change_password_wrong_current_password_returns_401(
 
     assert response.status_code == 401
 
+
 async def test_change_password_revokes_all_refresh_tokens(
     client: AsyncClient,
     db_session: AsyncSession,
@@ -144,7 +147,7 @@ async def test_change_password_revokes_all_refresh_tokens(
     first_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -152,7 +155,7 @@ async def test_change_password_revokes_all_refresh_tokens(
     second_login = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -186,7 +189,8 @@ async def test_change_password_revokes_all_refresh_tokens(
     assert response.status_code == 200
 
     result = await db_session.execute(
-        select(RefreshToken).where(
+        select(RefreshToken)
+        .where(
             RefreshToken.user_id == test_user.id,
         )
         .execution_options(
@@ -201,3 +205,40 @@ async def test_change_password_revokes_all_refresh_tokens(
     for token in tokens_after:
         assert token.revoked_at is not None
 
+
+async def test_change_password_with_same_password_returns_422(
+    client: AsyncClient,
+    test_user,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    response = await client.patch(
+        "/api/v1/auth/change-password",
+        headers={
+            "Authorization": f"Bearer {access_token}",
+        },
+        json={
+            "current_password": "StrongPassword123!",
+            "new_password": "StrongPassword123!",
+        },
+    )
+
+    assert response.status_code == 422
+
+    body = response.json()
+
+    assert body["success"] is False
+    assert body["message"] == (
+        "New password must be different from the current password"
+    )
+    assert body["error"]["code"] == "SAME_PASSWORD"

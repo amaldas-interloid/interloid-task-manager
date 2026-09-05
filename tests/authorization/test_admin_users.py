@@ -9,7 +9,7 @@ async def test_normal_user_cannot_list_users(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "testuser@example.com",
+            "email": test_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -36,7 +36,7 @@ async def test_admin_can_list_users(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -67,7 +67,7 @@ async def test_admin_can_deactivate_user(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -93,14 +93,14 @@ async def test_admin_can_deactivate_user(
 
 
 async def test_admin_can_promote_user(
-        client: AsyncClient,
-        admin_user,
-        test_user,
+    client: AsyncClient,
+    admin_user,
+    test_user,
 ) -> None:
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -108,13 +108,13 @@ async def test_admin_can_promote_user(
     access_token = login_response.json()["data"]["access_token"]
 
     response = await client.patch(
-       f"/api/v1/users/{test_user.id}",
-       headers={
-           "Authorization": f"Bearer {access_token}",
-       },
-       json={
-           "role": "admin",
-       },
+        f"/api/v1/users/{test_user.id}",
+        headers={
+            "Authorization": f"Bearer {access_token}",
+        },
+        json={
+            "role": "admin",
+        },
     )
 
     assert response.status_code == 200
@@ -123,6 +123,7 @@ async def test_admin_can_promote_user(
 
     assert body["data"]["role"] == "admin"
 
+
 async def test_admin_cannot_deactivate_self(
     client: AsyncClient,
     admin_user,
@@ -130,7 +131,7 @@ async def test_admin_cannot_deactivate_self(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -157,7 +158,7 @@ async def test_admin_cannot_demote_self(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -184,7 +185,7 @@ async def test_last_active_admin_cannot_be_deactivated(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )
@@ -247,7 +248,7 @@ async def test_admin_can_deactivate_another_admin_when_one_remains(
     login_response = await client.post(
         "/api/v1/auth/login",
         json={
-            "email": "admin@example.com",
+            "email": admin_user.email,
             "password": "StrongPassword123!",
         },
     )

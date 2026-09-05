@@ -69,6 +69,7 @@ async def test_register_duplicate_email_returns_409(
     assert first_response.status_code == 201
     assert second_response.status_code == 409
 
+
 async def test_register_invalid_email_returns_422(
     client: AsyncClient,
 ) -> None:
@@ -132,12 +133,12 @@ async def test_register_weak_password_returns_422(
 
 
 async def test_login_inactive_user_returns_401(
-        client: AsyncClient,
-        inactive_user,
+    client: AsyncClient,
+    inactive_user,
 ) -> None:
     response = await client.post(
         "/api/v1/auth/login",
-        json = {
+        json={
             "email": "inactive@example.com",
             "password": "StrongPassword123!",
         },
@@ -149,5 +150,3 @@ async def test_login_inactive_user_returns_401(
 
     assert body["success"] is False
     assert body["error"]["code"] == "INVALID_CREDENTIALS"
-
-    
