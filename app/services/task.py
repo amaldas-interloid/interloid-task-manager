@@ -61,6 +61,8 @@ class TaskService:
             search=query.search,
             limit=query.limit,
             offset=query.offset,
+            sort_by=query.sort_by,
+            order=query.order,
         )
 
         return TaskListResponse(

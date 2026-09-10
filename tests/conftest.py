@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import (
 from uuid6 import uuid7
 
 from app.core.config import settings
+from app.core.rate_limit import login_rate_limiter
 from app.core.security import hash_password
 from app.db.dependencies import get_db
 from app.enums import RoleName
@@ -194,3 +195,15 @@ async def second_admin(
     await db_session.refresh(user)
 
     return user
+
+
+@pytest.fixture(autouse=True)
+async def reset_login_rate_limiter() -> AsyncGenerator[
+    None,
+    None,
+]:
+    await login_rate_limiter.reset()
+
+    yield
+
+    await login_rate_limiter.reset()

@@ -1,3 +1,5 @@
+from fastapi import status
+
 from app.exceptions.base import AppException
 
 
@@ -68,4 +70,28 @@ class SamePasswordException(AppException):
             message="New password must be different from the current password",
             code="SAME_PASSWORD",
             status_code=422,
+        )
+
+
+class LoginRateLimitExceededException(AppException):
+    def __init__(
+        self,
+        retry_after: int,
+    ) -> None:
+        super().__init__(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            message="Too many login attempts",
+            code="LOGIN_RATE_LIMIT_EXCEEDED",
+            headers={
+                "Retry-After": str(retry_after),
+            },
+        )
+
+
+class SessionNotFoundException(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            message="Session not found",
+            code="SESSION_NOT_FOUND",
         )

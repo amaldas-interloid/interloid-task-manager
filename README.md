@@ -205,15 +205,18 @@ POST   /api/v1/auth/register
 POST   /api/v1/auth/login
 POST   /api/v1/auth/refresh
 POST   /api/v1/auth/logout
+POST   /api/v1/auth/logout-all
 GET    /api/v1/auth/me
 PATCH  /api/v1/auth/change-password
+GET    /api/v1/auth/sessions
+DELETE  /api/v1/auth/sessions/{id}
 ```
 
 ### User Administration
 
 ```text
 GET    /api/v1/users
-PATCH  /api/v1/users/{user_id}
+PATCH  /api/v1/users/{id}
 ```
 
 These endpoints require `ADMIN` privileges.
@@ -223,9 +226,9 @@ These endpoints require `ADMIN` privileges.
 ```text
 POST    /api/v1/tasks
 GET     /api/v1/tasks
-GET     /api/v1/tasks/{task_id}
-PATCH   /api/v1/tasks/{task_id}
-DELETE  /api/v1/tasks/{task_id}
+GET     /api/v1/tasks/{id}
+PATCH   /api/v1/tasks/{id}
+DELETE  /api/v1/tasks/{id}
 ```
 
 The task-list endpoint supports:
@@ -631,7 +634,7 @@ The script builds the image using both a versioned tag and the `latest` tag and 
 Current release:
 
 ```text
-v1.2.0
+v1.2.3
 ```
 
 Make the script executable:
@@ -651,7 +654,7 @@ Run the script:
 The script publishes:
 
 ```text
-amaldas12345/interloid-task-manager:v1.2.0
+amaldas12345/interloid-task-manager:v1.2.3
 amaldas12345/interloid-task-manager:latest
 ```
 
@@ -659,7 +662,7 @@ amaldas12345/interloid-task-manager:latest
 
 ```bash
 docker build \
-  -t interloid-task-manager:v1.2.0 \
+  -t interloid-task-manager:v1.2.3\
   .
 ```
 
@@ -671,7 +674,7 @@ docker run -d \
   --restart unless-stopped \
   --env-file .env \
   -p 8000:8000 \
-  interloid-task-manager:v1.2.0
+  interloid-task-manager:v1.2.3
 ```
 
 Check the running container:
@@ -695,7 +698,7 @@ Versioned Docker tags are used so deployments can be identified and rolled back 
 Versioned image:
 
 ```text
-amaldas12345/interloid-task-manager:v1.2.0
+amaldas12345/interloid-task-manager:v1.2.3
 ```
 
 Latest image:
@@ -715,7 +718,7 @@ The application is containerized using Docker and deployed on AWS EC2.
 Current release:
 
 ```text
-v1.2.0
+v1.2.3
 ```
 
 The deployed container exposes FastAPI through port `8000`.
@@ -745,7 +748,7 @@ FastAPI :8000
 A deployment script on EC2 can pull and deploy a specific version:
 
 ```bash
-./deploy.sh v1.2.0
+./deploy.sh v1.2.3
 ```
 
 Using versioned Docker images allows deployments to be identified and makes rollback to an earlier release possible when required.
@@ -802,4 +805,3 @@ Swagger UI can be used to test:
 * Database constraints provide final protection against duplicate emails.
 * Database row locking is used for concurrency-sensitive operations.
 ---
-
