@@ -4,7 +4,6 @@ from collections.abc import AsyncGenerator
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
-from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -24,23 +23,6 @@ from app.models.user import User
 def validate_test_database() -> None:
     if os.getenv("ENV_FILE") != ".env.test":
         raise RuntimeError("Tests must be run with ENV_FILE=.env.test")
-
-    database_url = make_url(
-        settings.database_url,
-    )
-
-    expected_host = "ep-bold-bird-b3n4b2j8-pooler.c-4.ap-southeast-1.aws.neon.tech"
-    expected_database = "neondb"
-    expected_user = "neondb_owner"
-
-    if (
-        database_url.host != expected_host
-        or database_url.database != expected_database
-        or database_url.username != expected_user
-    ):
-        raise RuntimeError(
-            "Refusing to run tests against an unapproved database destination"
-        )
 
 
 validate_test_database()

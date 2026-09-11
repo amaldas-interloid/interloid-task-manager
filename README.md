@@ -418,6 +418,12 @@ Swagger UI:
 http://localhost:8000/docs
 ```
 
+### Test Environment
+
+Create the test environment file:
+
+```bash
+cp .env.test.example .env.test
 ---
 
 ## Authentication Flow

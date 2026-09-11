@@ -367,3 +367,48 @@ async def test_revoke_session_requires_authentication(
     )
 
     assert response.status_code == 401
+
+
+@pytest.mark.anyio
+async def test_revoked_session_access_token_returns_401(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    sessions_response = await client.get(
+        "/api/v1/auth/sessions",
+        headers=headers,
+    )
+
+    assert sessions_response.status_code == 200
+
+    session_id = sessions_response.json()["data"]["items"][0]["id"]
+
+    revoke_response = await client.delete(
+        f"/api/v1/auth/sessions/{session_id}",
+        headers=headers,
+    )
+
+    assert revoke_response.status_code == 200
+
+    me_response = await client.get(
+        "/api/v1/auth/me",
+        headers=headers,
+    )
+
+    assert me_response.status_code == 401

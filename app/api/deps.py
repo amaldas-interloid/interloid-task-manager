@@ -21,6 +21,7 @@ from app.enums import (
 )
 from app.exceptions.auth import ForbiddenException, UnauthorizedException
 from app.models.user import User
+from app.repositories.refresh_token import RefreshTokenRepository
 from app.repositories.user import UserRepository
 from app.schemas.task import TaskListQuery
 
@@ -49,6 +50,11 @@ async def get_current_user(
     if not isinstance(subject, str):
         raise UnauthorizedException()
 
+    session_id = payload.get("sid")
+
+    if not isinstance(session_id, str):
+        raise UnauthorizedException()
+
     issued_at = payload.get("iat")
 
     if not isinstance(issued_at, int | float):
@@ -56,6 +62,7 @@ async def get_current_user(
 
     try:
         user_id = UUID(subject)
+        family_id = UUID(session_id)
     except ValueError as exc:
         raise UnauthorizedException() from exc
 
@@ -78,6 +85,15 @@ async def get_current_user(
         user.password_changed_at is not None
         and token_issued_at < user.password_changed_at
     ):
+        raise UnauthorizedException()
+
+    refresh_token_repository = RefreshTokenRepository(session)
+
+    active_session = await refresh_token_repository.get_active_session_by_family_id(
+        user_id=user.id, family_id=family_id
+    )
+
+    if active_session is None:
         raise UnauthorizedException()
 
     return user
