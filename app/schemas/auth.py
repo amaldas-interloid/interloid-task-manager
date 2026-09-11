@@ -91,3 +91,17 @@ class ChangePasswordRequest(BaseModel):
     @classmethod
     def validate_new_password(cls, value: str) -> str:
         return validate_password_strength(value)
+
+
+class SessionResponse(BaseModel):
+    id: UUID
+    browser: str | None
+    os: str | None
+    created_at: datetime
+    expires_at: datetime
+    is_current: bool
+
+
+class SessionListResponse(BaseModel):
+    items: list[SessionResponse]
+    total: int

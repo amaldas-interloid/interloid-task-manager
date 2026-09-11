@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -68,6 +69,7 @@ class UserRepository(BaseRepository[User]):
         password_hash: str,
     ) -> User:
         user.password_hash = password_hash
+        user.password_changed_at = datetime.now(UTC)
 
         await self.session.flush()
         await self.session.refresh(user)

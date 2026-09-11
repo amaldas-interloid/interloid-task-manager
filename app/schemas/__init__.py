@@ -5,6 +5,8 @@ from app.schemas.auth import (
     LogoutRequest,
     RefreshRequest,
     RegisterRequest,
+    SessionListResponse,
+    SessionResponse,
     UserResponse,
 )
 from app.schemas.common import (
@@ -23,5 +25,7 @@ __all__ = [
     "LogoutRequest",
     "RefreshRequest",
     "RegisterRequest",
+    "SessionListResponse",
+    "SessionResponse",
     "UserResponse",
 ]

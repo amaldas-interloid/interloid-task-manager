@@ -709,3 +709,450 @@ async def test_normal_user_cannot_filter_tasks_by_another_owner(
     items = body["data"]["items"]
 
     assert all(task["owner_id"] == str(test_user.id) for task in items)
+
+
+@pytest.mark.anyio
+async def test_tasks_sort_by_created_at_asc(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    for title in [
+        "First Task",
+        "Second Task",
+        "Third Task",
+    ]:
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=headers,
+            json={
+                "title": title,
+                "priority": "Medium",
+            },
+        )
+
+        assert response.status_code == 201
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "sort_by": "created_at",
+            "order": "asc",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    items = body["data"]["items"]
+
+    created_dates = [item["created_at"] for item in items]
+
+    assert len(created_dates) == 3
+
+    assert created_dates == sorted(
+        created_dates,
+    )
+
+
+@pytest.mark.anyio
+async def test_tasks_sort_by_created_at_desc(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    for title in [
+        "First Task",
+        "Second Task",
+        "Third Task",
+    ]:
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=headers,
+            json={
+                "title": title,
+                "priority": "Medium",
+            },
+        )
+
+        assert response.status_code == 201
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "sort_by": "created_at",
+            "order": "desc",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    items = body["data"]["items"]
+
+    created_dates = [item["created_at"] for item in items]
+
+    assert len(created_dates) == 3
+
+    assert created_dates == sorted(
+        created_dates,
+        reverse=True,
+    )
+
+
+@pytest.mark.anyio
+async def test_tasks_sort_by_priority_asc(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    for title, priority in [
+        ("High Task", "High"),
+        ("Low Task", "Low"),
+        ("Medium Task", "Medium"),
+    ]:
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=headers,
+            json={
+                "title": title,
+                "priority": priority,
+            },
+        )
+
+        assert response.status_code == 201
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "sort_by": "priority",
+            "order": "asc",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    items = body["data"]["items"]
+
+    priorities = [item["priority"] for item in items]
+
+    assert priorities == [
+        "Low",
+        "Medium",
+        "High",
+    ]
+
+
+@pytest.mark.anyio
+async def test_tasks_sort_by_priority_desc(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    for title, priority in [
+        ("Low Task", "Low"),
+        ("Medium Task", "Medium"),
+        ("High Task", "High"),
+    ]:
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=headers,
+            json={
+                "title": title,
+                "priority": priority,
+            },
+        )
+
+        assert response.status_code == 201
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "sort_by": "priority",
+            "order": "desc",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    items = body["data"]["items"]
+
+    priorities = [item["priority"] for item in items]
+
+    assert priorities == [
+        "High",
+        "Medium",
+        "Low",
+    ]
+
+
+@pytest.mark.anyio
+async def test_tasks_sort_by_due_date_asc(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    tasks = [
+        {
+            "title": "Later Task",
+            "priority": "Medium",
+            "due_date": "2026-09-15",
+        },
+        {
+            "title": "No Due Date Task",
+            "priority": "Medium",
+            "due_date": None,
+        },
+        {
+            "title": "Earlier Task",
+            "priority": "Medium",
+            "due_date": "2026-09-10",
+        },
+    ]
+
+    for task in tasks:
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=headers,
+            json=task,
+        )
+
+        assert response.status_code == 201
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "sort_by": "due_date",
+            "order": "asc",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    items = body["data"]["items"]
+
+    due_dates = [item["due_date"] for item in items]
+
+    assert due_dates == [
+        "2026-09-10",
+        "2026-09-15",
+        None,
+    ]
+
+
+@pytest.mark.anyio
+async def test_tasks_sort_by_due_date_desc(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    tasks = [
+        {
+            "title": "Earlier Task",
+            "priority": "Medium",
+            "due_date": "2026-09-10",
+        },
+        {
+            "title": "No Due Date Task",
+            "priority": "Medium",
+            "due_date": None,
+        },
+        {
+            "title": "Later Task",
+            "priority": "Medium",
+            "due_date": "2026-09-15",
+        },
+    ]
+
+    for task in tasks:
+        response = await client.post(
+            "/api/v1/tasks",
+            headers=headers,
+            json=task,
+        )
+
+        assert response.status_code == 201
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "sort_by": "due_date",
+            "order": "desc",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    items = body["data"]["items"]
+
+    due_dates = [item["due_date"] for item in items]
+
+    assert due_dates == [
+        "2026-09-15",
+        "2026-09-10",
+        None,
+    ]
+
+
+@pytest.mark.anyio
+async def test_invalid_sort_by_returns_422(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "sort_by": "invalid_field",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.anyio
+async def test_invalid_sort_order_returns_422(
+    client: AsyncClient,
+    test_user: User,
+) -> None:
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": test_user.email,
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["data"]["access_token"]
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    response = await client.get(
+        "/api/v1/tasks",
+        params={
+            "order": "invalid_order",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 422

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: SecretStr
+    DB_SSL: bool
 
     JWT_SECRET_KEY: SecretStr
     JWT_ALGORITHM: Literal["HS256", "HS384", "HS512"] = "HS256"

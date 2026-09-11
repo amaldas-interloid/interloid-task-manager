@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, status
+from typing import Annotated
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_session_id, get_current_user
 from app.api.responses import (
     EMAIL_ALREADY_EXISTS_RESPONSE,
     INVALID_CREDENTIALS_RESPONSE,
@@ -12,15 +15,16 @@ from app.api.responses import (
 )
 from app.db.dependencies import get_db
 from app.models.user import User
-from app.schemas.auth import (
+from app.schemas import (
+    APIResponse,
     ChangePasswordRequest,
     LoginRequest,
     LoginResponse,
     RefreshRequest,
     RegisterRequest,
+    SessionListResponse,
     UserResponse,
 )
-from app.schemas.common import APIResponse
 from app.services.auth import AuthService
 
 router = APIRouter(
@@ -63,11 +67,24 @@ async def register(
 )
 async def login(
     request: LoginRequest,
+    http_request: Request,
     session: AsyncSession = Depends(get_db, scope="function"),
 ) -> APIResponse[LoginResponse]:
     service = AuthService(session)
 
-    tokens = await service.login(request)
+    user_agent = http_request.headers.get(
+        "user-agent",
+    )
+
+    client_ip = (
+        http_request.client.host if http_request.client is not None else "unknown"
+    )
+
+    tokens = await service.login(
+        request,
+        user_agent=user_agent,
+        client_ip=client_ip,
+    )
 
     return APIResponse(
         message="Login successful",
@@ -121,6 +138,36 @@ async def logout(
     )
 
 
+@router.post(
+    "/logout-all",
+    response_model=APIResponse[None],
+    status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+    },
+)
+async def logout_all(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    session: Annotated[
+        AsyncSession,
+        Depends(get_db, scope="function"),
+    ],
+) -> APIResponse[None]:
+    service = AuthService(session)
+
+    await service.logout_all(
+        current_user,
+    )
+
+    return APIResponse(
+        message="logged out from all sessions successfully",
+        data=None,
+    )
+
+
 @router.get(
     "/me",
     response_model=APIResponse[UserResponse],
@@ -161,4 +208,65 @@ async def change_password(
 
     return APIResponse(
         message="password changed successfully",
+    )
+
+
+@router.get(
+    "/sessions",
+    response_model=APIResponse[SessionListResponse],
+    status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+    },
+)
+async def get_sessions(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    current_session_id: Annotated[
+        UUID,
+        Depends(get_current_session_id),
+    ],
+    session: Annotated[
+        AsyncSession,
+        Depends(get_db, scope="function"),
+    ],
+) -> APIResponse[SessionListResponse]:
+    service = AuthService(session)
+
+    result = await service.get_sessions(
+        user=current_user,
+        current_session_id=current_session_id,
+    )
+
+    return APIResponse(
+        message="Active sessions fetched successfully",
+        data=result,
+    )
+
+
+@router.delete(
+    "/sessions/{id}",
+    response_model=APIResponse[None],
+    status_code=status.HTTP_200_OK,
+    responses={
+        **UNAUTHORIZED_RESPONSE,
+    },
+)
+async def revoke_session(
+    id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_db, scope="function")],
+) -> APIResponse[None]:
+    service = AuthService(session)
+
+    await service.revoke_session(
+        user=current_user,
+        family_id=id,
+    )
+
+    return APIResponse(
+        message="session revoked successfully",
+        data=None,
     )
